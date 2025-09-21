@@ -1,0 +1,41 @@
+.planificador-procesos-container{
+
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.planificador-procesos-container--iniciar-simulacion-button{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.planificador-procesos-container--input{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2vw;
+    width: 90%;
+
+}
+
+.planificador-procesos-container--input--json{
+    width: 70%;
+    height: 100%;
+}
+
+.planificador-procesos-container--input--form{
+    width: 20%;
+}
+
+
+.planificador--procesos-container--gantt-chart{
+    height: 100%;
+    width: 80%;
+}

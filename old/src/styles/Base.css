@@ -1,0 +1,45 @@
+:root{
+
+    /* PRIMARIOS */
+    --primary: #F24C00;
+    --on-primary: #ffffff;
+
+    --primary-container: #fa7234;
+    --on-primary-container: #842e07;
+
+    /* SECUNDARIOS */
+    --secondary: #7C809B;
+    --on-secondary: #ffffff;
+
+    --secondary-container: #AEB1C1;
+    --on-secondary-container: #353845;
+
+    /* TERCIARIOS */
+    --tertiary: #0072A3;
+    --on-tertiary: #ffffff;
+
+    --tertiary-container: #1FBCFF;
+    --on-tertiary-container: #00567A;
+
+
+    /* BACKGROUND */
+    --surface-highest: #F6F8F2;
+    --surface-high: #e4e8db;
+    --surface: #DCE2C8;
+    --surface-low: #c4caae;
+    --surface-lowest: #abb48c;
+
+    --on-surface: #000000;
+
+    --surface-variant: #372F32;
+    --on-surface-variant: #ffffff;
+
+    /* SHADOWS */
+    --box-shadow-1:  1px 0 8px rgba(0, 0, 0, 0.80);
+    --box-shadow-white-1:  1px 0 8px rgba(177, 177, 177, 0.4);
+
+    --border-radius: 5px;
+    --border-radius-button: 15px;
+    --border-radius-icon-button: 100%;
+    --box-shadow-form-input:  0 0 8px rgba(0, 0, 0, 0.20);
+}
