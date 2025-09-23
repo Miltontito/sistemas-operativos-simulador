@@ -34,6 +34,8 @@ export default class FCFS {
     // Lista de procesos Finalizados
     const procesosFinalizados = [];
 
+    procesosSimulacion.sort((a, b) => a.tiempo_arribo - b.tiempo_arribo);
+
     // Mientas los "procesos terminados" sea menor a "la cantidad de procesos totales" 
     while (procesosFinalizados.length < procesosSimulacion.length) {
       
