@@ -9,9 +9,7 @@ function Main({body}) {
   const navigate = useNavigate();
 
   const secciones = [
-    <Button name={"Planificador de Procesos"} color='primary' onClick={() => navigate("/planificador-procesos")} />,
-    <Button name={"proximamente"} color='secondary' onClick={() => navigate("/")} />,
-    <Button name={"proximamente"} color='secondary' onClick={() => navigate("/")} />
+    <Button name={"Planificador de Procesos"} color='primary' onClick={() => navigate("/planificador-procesos")} />
   ]
 
   return (
