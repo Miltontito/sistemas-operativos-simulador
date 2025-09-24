@@ -1,7 +1,14 @@
 import React, { useState } from 'react';
 import './PlanificadorProcesos.css';
-import { Simulador } from './components/Simulador';
+// Importamos el nuevo Simulador que ahora se encuentra en la raíz
+import Simulador from './components/Simulador'; 
+// Importamos las clases de estrategia
 import FCFS from './Estrategias/FCFS';
+import RoundRobin from './Estrategias/RoundRobin';
+import SPN from './Estrategias/SPN';
+import SRTN from './Estrategias/SRTN';
+import PrioridadExterna from './Estrategias/PrioridadExterna';
+
 import GanttChart from './components/GanttChart';
 import Button from '../../components/Button/Button';
 import DynamicForm from '../../components/DynamicForm/DynamicForm';
@@ -18,11 +25,10 @@ function PlanificadorProcesos() {
   // Datos necesarios para el Gantt
   const [schedule, setSchedule] = useState([]);
   const [totalTime, setTotalTime] = useState(0);
-  const [ganttProcesses, setGanttProcesses] = useState([]);
 
   // Datos de Entrada
   const [initialProcesses, setInitialProcesses] = useState(defaultProcess);
-  const [estrategia, setEstrategia] = useState(new FCFS());
+  const [estrategiaSeleccionada, setEstrategiaSeleccionada] = useState('FCFS');
 
   // Datos de los formularios
   const [formData, setFormData] = useState({
@@ -41,7 +47,6 @@ function PlanificadorProcesos() {
   // Handle para el JSON
   const handleChangeProcesos = (name, value) => {
     setProcesosJson(value);
-
     if (name === "json") {
       try {
         const parsed = JSON.parse(value);
@@ -52,29 +57,48 @@ function PlanificadorProcesos() {
         }
       } catch (error) {
         console.error("JSON inválido:", error.message);
-        // Si el JSON es inválido, puedes volver a los valores por defecto
         setInitialProcesses(defaultProcess);
       }
     }
   };
 
-  // Logica principal 
+  // Estrategias disponibles para el selector, con sus parámetros.
+  // Ahora, las instancias se crean dentro de iniciarSimulacion.
+  const estrategiasDisponibles = {
+    FCFS: FCFS,
+    "Round Robin": RoundRobin,
+    SPN: SPN,
+    SRTN: SRTN,
+    "Prioridad Externa": PrioridadExterna,
+  };
+
+  // Lógica principal
   const iniciarSimulacion = () => {
+    // 1. Instanciamos la clase de estrategia seleccionada.
+    // Pasamos los parámetros de sistema al constructor del simulador, no a la estrategia.
+    const EstrategiaClass = estrategiasDisponibles[estrategiaSeleccionada];
+    const estrategiaInstance = new EstrategiaClass();
     
-    // Se pasan los parámetros del formulario al constructor de la estrategia
-    const estrategiaConParametros = new FCFS(formData.tip, formData.tfp, formData.tcp);
-    // Para el caso de RoundRobin, se pasaría el quantum: new RoundRobin(formData.q, ...);
+    // 2. Creamos la instancia del nuevo Simulador, pasando la estrategia y los parámetros de sistema.
+    const simulador = new Simulador(
+      estrategiaInstance,
+      formData.tip,
+      formData.tfp,
+      formData.tcp,
+      formData.q // El quantum se pasa aquí, no en la estrategia
+    );
 
-    // Creamos una nueva instancia del simulador
-    const simulador = new Simulador(initialProcesses, estrategiaConParametros);
+    // 3. Ejecutamos la simulación, pasando los procesos a simular.
+    const { schedule, totalTime } = simulador.simular(initialProcesses);
 
-    // Ejecutamos la simulación
-    const { schedule, totalTime, processes } = simulador.run();
-
-    // Actualizamos el estado para el Gantt
+    // 4. Actualizamos los estados para el Gantt
     setSchedule(schedule);
     setTotalTime(totalTime);
-    setGanttProcesses(processes);
+    
+    // Aquí puedes calcular los datos para las métricas si lo necesitas.
+    // Por ejemplo, el tiempo de retorno.
+    // El 'schedule' ahora contiene toda la información necesaria para el Gantt.
+    // `ganttProcesses` ya no es necesario, puedes pasar `initialProcesses` al GanttChart.
   };
 
   const datosEntrada = [
@@ -105,10 +129,25 @@ function PlanificadorProcesos() {
         </div>
       </div>
       <div className='planificador-procesos-container--iniciar-simulacion-button'>
-        <Button onClick={iniciarSimulacion} name={"Iniciar Simulación " + estrategia.getName()} size="medium" />
+        <div className="planificador-procesos-container--selector">
+          <label htmlFor="estrategia">Estrategia: </label>
+          <select
+            id="estrategia"
+            value={estrategiaSeleccionada}
+            onChange={(e) => {
+              setEstrategiaSeleccionada(e.target.value);
+            }}
+          >
+            {Object.keys(estrategiasDisponibles).map((nombre) => (
+              <option key={nombre} value={nombre}>{nombre}</option>
+            ))}
+          </select>
+        </div>
+        <Button onClick={iniciarSimulacion} name={"Iniciar Simulación con " + estrategiaSeleccionada} />
       </div>
       <div className='planificador--procesos-container--gantt-chart'>
-        <GanttChart schedule={schedule} processes={ganttProcesses} totalTime={totalTime} />
+        {/* Pasamos los procesos iniciales para que el Gantt sepa los nombres y colores */}
+        <GanttChart schedule={schedule} processes={initialProcesses} totalTime={totalTime} />
       </div>
     </div>
   );

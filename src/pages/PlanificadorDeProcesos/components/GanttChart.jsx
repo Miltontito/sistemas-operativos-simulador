@@ -2,7 +2,7 @@ import React from 'react';
 import './GanttChart.css';
 
 const GanttBlock = ({ process, type, start, end, processes, scale }) => {
-  const processIndex = processes.indexOf(process);
+  const processIndex = processes.findIndex(p => p.nombre === process);
   const backgroundColor = `hsl(${(processIndex * 50) % 360}, 70%, 70%)`;
 
   // Lógica para determinar el texto del bloque y la clase CSS
@@ -65,8 +65,8 @@ function GanttChart({ schedule, processes, totalTime }) {
       <div className="gantt-chart__process-labels">
         <div style={{ height: '40px' }}></div>
         {processes.map((p) => (
-          <div key={p} className="gantt-chart__process-label">
-            {p}
+          <div key={p.nombre} className="gantt-chart__process-label">
+            {p.nombre}
           </div>
         ))}
       </div>
@@ -80,7 +80,7 @@ function GanttChart({ schedule, processes, totalTime }) {
             <div
               key={i}
               className="gantt-chart__time-label"
-              style={{ left: `${i * scale+6}px` }}
+              style={{ left: `${i * scale + 6}px` }}
             >
               {i}
             </div>
