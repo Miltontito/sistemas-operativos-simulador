@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './PlanificadorProcesos.css';
 // Importamos el nuevo Simulador que ahora se encuentra en la raíz
-import Simulador from './components/Simulador'; 
+import Simulador from './components/Simulador';
 // Importamos las clases de estrategia
 import FCFS from './Estrategias/FCFS';
 import RoundRobin from './Estrategias/RoundRobin';
@@ -39,6 +39,10 @@ function PlanificadorProcesos() {
   });
   const [procesosJson, setProcesosJson] = useState(JSON.stringify(defaultProcess, null, 2));
 
+  // Datos de Métricas (NUEVO)
+  const [metrics, setMetrics] = useState(null);
+  const [log, setLog] = useState([]);
+
   // Handle para los formularios de entrada
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -51,7 +55,12 @@ function PlanificadorProcesos() {
       try {
         const parsed = JSON.parse(value);
         if (Array.isArray(parsed)) {
-          setInitialProcesses(parsed);
+          // Asegurarse de que todos los procesos tengan prioridad_externa para evitar errores en Proceso.jsx
+          const validatedProcesses = parsed.map(p => ({
+            ...p,
+            prioridad_externa: p.prioridad_externa !== undefined ? p.prioridad_externa : 1
+          }));
+          setInitialProcesses(validatedProcesses);
         } else {
           console.error("El JSON debe ser un array de objetos");
         }
@@ -63,7 +72,6 @@ function PlanificadorProcesos() {
   };
 
   // Estrategias disponibles para el selector, con sus parámetros.
-  // Ahora, las instancias se crean dentro de iniciarSimulacion.
   const estrategiasDisponibles = {
     FCFS: FCFS,
     "Round Robin": RoundRobin,
@@ -75,30 +83,26 @@ function PlanificadorProcesos() {
   // Lógica principal
   const iniciarSimulacion = () => {
     // 1. Instanciamos la clase de estrategia seleccionada.
-    // Pasamos los parámetros de sistema al constructor del simulador, no a la estrategia.
     const EstrategiaClass = estrategiasDisponibles[estrategiaSeleccionada];
     const estrategiaInstance = new EstrategiaClass();
-    
-    // 2. Creamos la instancia del nuevo Simulador, pasando la estrategia y los parámetros de sistema.
+
+    // 2. Creamos la instancia del nuevo Simulador
     const simulador = new Simulador(
       estrategiaInstance,
       formData.tip,
       formData.tfp,
       formData.tcp,
-      formData.q // El quantum se pasa aquí, no en la estrategia
+      formData.q
     );
 
-    // 3. Ejecutamos la simulación, pasando los procesos a simular.
-    const { schedule, totalTime } = simulador.simular(initialProcesses);
+    // 3. Ejecutamos la simulación, que devuelve schedule, totalTime y metricas
+    const { schedule, totalTime, metricas, log } = simulador.simular(initialProcesses);
 
-    // 4. Actualizamos los estados para el Gantt
+    // 4. Actualizamos los estados
     setSchedule(schedule);
     setTotalTime(totalTime);
-    
-    // Aquí puedes calcular los datos para las métricas si lo necesitas.
-    // Por ejemplo, el tiempo de retorno.
-    // El 'schedule' ahora contiene toda la información necesaria para el Gantt.
-    // `ganttProcesses` ya no es necesario, puedes pasar `initialProcesses` al GanttChart.
+    setMetrics(metricas);
+    setLog(log)
   };
 
   const datosEntrada = [
@@ -148,6 +152,81 @@ function PlanificadorProcesos() {
       <div className='planificador--procesos-container--gantt-chart'>
         {/* Pasamos los procesos iniciales para que el Gantt sepa los nombres y colores */}
         <GanttChart schedule={schedule} processes={initialProcesses} totalTime={totalTime} />
+      </div>
+
+      {/* NUEVO: Sección para mostrar las Métricas */}
+      {metrics && (
+        <div className='planificador-procesos-container--metrics'>
+          <h2>Resultados de la Simulación ({estrategiaSeleccionada})</h2>
+
+          <p>Tiempo Total de Simulación: <strong>{metrics.cpu.tiempoTotal}</strong></p>
+
+          <hr />
+
+          <h3>Métricas de CPU</h3>
+          <div className='metrics-table'>
+            <table>
+              <thead>
+                <tr><th>Métrica</th><th>Tiempo Absoluto</th><th>Porcentaje (%)</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Utilizada por Procesos (CPU)</td><td>{metrics.cpu.utilizadaProcesos.absoluto}</td><td>{metrics.cpu.utilizadaProcesos.porcentaje}</td></tr>
+                <tr><td>Usada por el SO (TIP/TCP/TFP)</td><td>{metrics.cpu.usadaSO.absoluto}</td><td>{metrics.cpu.usadaSO.porcentaje}</td></tr>
+                <tr><td>Tiempo Desocupada (Idle)</td><td>{metrics.cpu.ociosa.absoluto}</td><td>{metrics.cpu.ociosa.porcentaje}</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <hr />
+
+          <h3>Métricas por Tanda</h3>
+          <div className='metrics-table'>
+            <table>
+              <thead>
+                <tr><th>Métrica</th><th>Valor</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Tiempo Total de Retorno</td><td>{metrics.porTanda.tiempoTotalRetorno}</td></tr>
+                <tr><td>Tiempo Medio de Retorno</td><td>{metrics.porTanda.tiempoMedioRetorno}</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <hr />
+
+          <h3>Métricas por Proceso</h3>
+          <div className='metrics-table'>
+            <table>
+              <thead>
+                <tr>
+                  <th>Proceso</th>
+                  <th>Tiempo de Retorno (TR)</th>
+                  <th>Tiempo en Estado Listo</th>
+                  <th>TR Normalizado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {metrics.porProceso.map(p => (
+                  <tr key={p.nombre}>
+                    <td>{p.nombre}</td>
+                    <td>{p.tiempoRetorno}</td>
+                    <td>{p.tiempoEnListo}</td>
+                    <td>{p.tiempoRetornoNormalizado}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      <div>
+        <h2>Log de Simulación</h2>
+        {log.map((entry, index) => (
+          <p key={index} className='log-entry'>
+            {/* Muestra las propiedades del objeto de forma legible */}
+            {`[Tiempo: ${entry.time}] ${entry.description} (Tipo: ${entry.type}, Proceso: ${entry.process})`}
+          </p>
+        ))}
       </div>
     </div>
   );
