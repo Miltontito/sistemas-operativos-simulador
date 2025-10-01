@@ -1,0 +1,114 @@
+/* Contenedor principal del componente */
+.gantt-chart__wrapper {
+  display: flex;
+  position: relative;
+}
+
+/* Contenedor de las etiquetas de los procesos */
+.gantt-chart__process-labels {
+  display: flex;
+  flex-direction: column;
+  width: 60px;
+  text-align: right;
+  padding-right: 10px;
+  font-weight: bold;
+  box-sizing: border-box;
+  z-index: 2;
+  flex-shrink: 0; /* Evita que este contenedor se encoja */
+}
+
+/* Estilo individual para cada etiqueta de proceso */
+.gantt-chart__process-label {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Contenedor que permite el scroll horizontal */
+.gantt-chart__scroll-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Contenedor de las etiquetas de tiempo */
+/* Etiquetas de tiempo */
+.gantt-chart__time-labels {
+  position: relative;
+  height: 40px;
+}
+
+/* Estilo individual para cada etiqueta de tiempo */
+/* Ahora los números están alineados al inicio */
+.gantt-chart__time-label {
+  position: absolute;
+  top: 20px;
+  font-size: 12px;
+}
+
+/* Cuadrícula principal para los bloques de Gantt */
+/* Grid con líneas horizontales y verticales */
+.gantt-chart__grid {
+  position: relative;
+  left: 10px;
+
+  background-image: 
+    repeating-linear-gradient(
+      to right,
+      #ccc 0,
+      #ccc 1px,
+      transparent 1px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      #ccc 0,
+      #ccc 1px,
+      transparent 1px,
+      transparent 40px
+    );
+  border: 1px solid #ccc;
+}
+
+/* Estilos base para todos los bloques */
+.block {
+  position: absolute; /* Esencial para el nuevo posicionamiento */
+  border: 1px solid #222;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  height: 30px; /* 40px de alto - 2px de border */
+  box-sizing: border-box;
+}
+
+/* Estilos específicos para bloques de CPU */
+.cpu-block {
+  z-index: 1;
+  color: black;
+  transform: translateY(15%);
+  text-shadow: 1px 1px 2px #00000080;
+}
+
+/* Estilos específicos para bloques de I/O */
+.io-block {
+  color: #28a745;
+  height: 19px; /* 20px de alto - 1px de border */
+  top: 50%;
+  transform: translateY(50%);
+  border: 1px dashed #28a745;
+}
+
+/* Nuevos estilos para los bloques de tipo sistema */
+.tip-block,
+.tcp-block,
+.tfp-block {
+  color: #6c757d;
+  z-index: 2;
+  border: 1px dashed #6c757d;
+  font-size: 10px;
+  height: 19px;
+  top: 50%;
+  transform: translateY(50%);
+}
